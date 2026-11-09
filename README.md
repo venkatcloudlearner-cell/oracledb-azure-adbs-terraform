@@ -176,3 +176,11 @@ is a separate resource and is not stopped by this command. Restart when needed:
 ```powershell
 az vm start --resource-group rg-adbs-azure-lab --name vm-adbs-client
 ```
+
+
+## Follow the staged blog walkthrough
+
+Use the cumulative [walkthrough snapshots](walkthrough/README.md) to create the
+resource group, VNet, Oracle-delegated subnet, database and client in sequence.
+Keep reference source separate and copy stages into one new working directory
+with the same state. The root configuration remains the complete final setup.
