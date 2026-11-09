@@ -138,9 +138,8 @@ data you need first. Do not run it while creation is in progress.
 
 ## Verification status
 
-The original lab verified creation of the resource group, VNet and delegated
-subnet. Initialization and validation passed; a saved database plan was reviewed
-for 19c, 2 ECPUs, 20 GB, private networking, mTLS and no autoscaling. At publication of this
-initial code snapshot, database creation was still **Provisioning**. Successful
-SQL connectivity has not yet been verified. This status will be updated as the
-lab progresses; it is not a claim of completed end-to-end deployment.
+The original lab created the resource group, VNet, delegated subnet and database.
+The database apply completed in 25 minutes and 12 seconds, with one resource
+added and no changes or deletions. A subsequent read-only Azure API check on
+November 9, 2026 confirmed **Succeeded / Available**, Oracle **19c**, **2 ECPUs**
+and **20 GB** of allocated storage. SQL connectivity has not yet been verified.
