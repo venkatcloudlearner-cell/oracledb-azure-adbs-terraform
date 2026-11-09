@@ -23,7 +23,6 @@ resource "azapi_resource" "database" {
       isMtlsConnectionRequired          = true
       vnetId                            = azurerm_virtual_network.lab.id
       subnetId                          = azurerm_subnet.oracle.id
-      privateEndpointLabel              = var.database_name
       autonomousMaintenanceScheduleType = "Regular"
       backupRetentionPeriodInDays       = 1
       isLocalDataGuardEnabled           = false
@@ -48,3 +47,4 @@ resource "azapi_resource" "database" {
     delete = "1h"
   }
 }
+

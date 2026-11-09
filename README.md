@@ -13,7 +13,7 @@ AzureRM manages the networking; AzAPI manages the database using the stable
 `2025-09-01` API. The installed AzureRM 4.81.0 database schema requires storage in
 TB; AzAPI lets us explicitly request 20 GB through `dataStorageSizeInGbs`.
 
-No VM, VPN gateway, NAT gateway, public database ACL, standby, or optional backup
+A small Linux tunnel VM and its client subnet, NSG, NIC and public IP are included. No VPN gateway, NAT gateway, public database ACL, standby, or optional backup
 job is created. Service-managed automatic backups are not disabled: retention is
 set to one day, as allowed by Oracle's current Azure provisioning guide.
 
@@ -80,7 +80,7 @@ so it is excluded from saved plans and state. It remains in this process's
 environment until removed or the window closes. Do not print it.
 
 **Review the plan before applying.** From an empty deployment this cumulative
-configuration should create **four resources**. It does not run files one at a
+configuration should create **ten resources**, including the six client resources. Before planning, create the SSH key and set TF_VAR_client_ssh_source_cidr as described below. It does not run files one at a
 time. In the original tutorial, files were added between plans to demonstrate
 resource group, VNet, subnet, and database creation separately. If those resources
 already exist, use their original Terraform state; do not apply a fresh clone
@@ -125,9 +125,7 @@ to this deployment, allowing unchanged resources to be retained on later runs.
 
 ## Connection and costs
 
-The database is private. A desktop connection needs a separately designed private
-network path/tunnel and DNS, plus its mTLS wallet and database credentials. This
-repository does not create that access path. Peering is relevant for a client in
+The database is private. The included client.tf creates the client VM and its network resources. Configure an SSH tunnel and local hostname mapping on Windows, then use the mTLS wallet and database credentials. Peering is relevant for a client in
 another VNet; it is not needed just to reach another subnet in the same VNet.
 
 Creating the database starts billable usage. Stopping compute does not remove
@@ -142,4 +140,39 @@ The original lab created the resource group, VNet, delegated subnet and database
 The database apply completed in 25 minutes and 12 seconds, with one resource
 added and no changes or deletions. A subsequent read-only Azure API check on
 November 9, 2026 confirmed **Succeeded / Available**, Oracle **19c**, **2 ECPUs**
-and **20 GB** of allocated storage. SQL connectivity has not yet been verified.
+and **20 GB** of allocated storage. SQL Developer connectivity was verified through the SSH tunnel using the wallet. Queries returned ADMIN and Oracle Database 19c version 19.33.0.1.0. The client VM was subsequently deallocated.
+
+## Tunnel VM setup
+
+Before planning the full configuration, create a local SSH key:
+
+```powershell
+New-Item -ItemType Directory -Path "$env:USERPROFILE\.ssh" -Force | Out-Null
+ssh-keygen -t rsa -b 3072 -f "$env:USERPROFILE\.ssh\azure-adbs-lab" -C "azure-adbs-lab"
+$myPublicIp = (Invoke-RestMethod -Uri "https://api4.ipify.org").Trim()
+$env:TF_VAR_client_ssh_source_cidr = "$myPublicIp/32"
+```
+
+Keep an existing key if present; do not overwrite it. Only the .pub file is read
+by Terraform. Standard_F1als_v7 (1 vCPU, 2 GB, NVMe) was available with quota in
+the lab subscription. Check SKU availability and family quota in your own
+subscription before apply. This size is not a claim of the cheapest option.
+The VM uses Ubuntu 22.04 Gen2 and a 30 GB Standard_LRS disk.
+
+For an existing four-resource database deployment, adding client.tf should plan
+six creates and no other resource changes. A fresh full clone plans ten creates.
+The original build was staged; its final VM creation took 22 seconds.
+
+After testing, stop compute billing with Azure deallocation:
+
+```powershell
+az vm deallocate --resource-group rg-adbs-azure-lab --name vm-adbs-client
+az vm get-instance-view --resource-group rg-adbs-azure-lab --name vm-adbs-client --query "instanceView.statuses[].displayStatus" --output tsv
+```
+
+Expect VM deallocated. Disk and static public IP charges remain. The database
+is a separate resource and is not stopped by this command. Restart when needed:
+
+```powershell
+az vm start --resource-group rg-adbs-azure-lab --name vm-adbs-client
+```
