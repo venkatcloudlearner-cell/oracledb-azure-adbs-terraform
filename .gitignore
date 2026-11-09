@@ -1,0 +1,11 @@
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.tfstate.lock.info
+*.tfplan
+terraform.tfvars
+*.auto.tfvars
+*.auto.tfvars.json
+crash*.log
+*.zip
+Wallet*/

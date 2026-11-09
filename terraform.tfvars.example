@@ -1,0 +1,10 @@
+subscription_id      = "YOUR_AZURE_SUBSCRIPTION_ID"
+location             = "eastus2"
+resource_group_name  = "rg-adbs-azure-lab"
+virtual_network_name = "vnet-adbs-azure-lab"
+# Example private ranges, not the original lab's ranges. Review overlap first.
+virtual_network_cidr = "10.100.0.0/16"
+oracle_subnet_name   = "snet-oracle-adbs"
+oracle_subnet_cidr   = "10.100.2.0/27"
+database_name        = "adbsazurelab01"
+database_version     = "19c"
